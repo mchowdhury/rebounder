@@ -1,6 +1,7 @@
 package com.prestonmueller.rebounder;
 
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             edit.putBoolean("module_enabled_GPSLocation", false);
             edit.putBoolean("module_enabled_LastSeen", false);
             edit.putBoolean("module_enabled_CampusLocation", false);
+            edit.putBoolean("module_enabled_LoudRinger", false);
 
             edit.apply();
 
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         //modules.add(new ModuleLocateCampus());
         modules.add(new ModuleETA());
         modules.add(new ModuleLastSeen());
+        modules.add(new ModuleLoudRinger());
         modules.add(new ModuleBattery());
         modules.add(new ModuleLocate());
 
@@ -133,6 +136,16 @@ public class MainActivity extends AppCompatActivity {
 				public void onCheckedChanged(CompoundButton buttonView,
 						boolean isChecked) {
 
+                    if(moduleName.equals("LoudRinger")) {
+                        NotificationManager notificationManager =
+                                (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                                && !notificationManager.isNotificationPolicyAccessGranted()) {
+                            Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                            startActivity(intent);
+                        }
+                    }
+
                     SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("rebounderPrefs", Context.MODE_PRIVATE);
                     SharedPreferences.Editor edit = sharedPreferences.edit();
 					edit.putBoolean("module_enabled_" + moduleName, isChecked);
@@ -174,9 +187,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         List<String> listPermissionsNeeded = new ArrayList<>();
-        if (permissionPhoneState != PackageManager.PERMISSION_GRANTED) {
+        /*if (permissionPhoneState != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(android.Manifest.permission.READ_PHONE_STATE);
         }
+        */
+
         if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
         }
